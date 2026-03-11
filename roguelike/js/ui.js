@@ -1,0 +1,359 @@
+// UI管理
+import { gameState, getTotalStats } from './gameState.js';
+import { getMonsterStats, getBattleLog } from './battle.js';
+import { buyRandomEquipment, equipObtainedItem } from './shop.js';
+import { GAME_CONFIG } from './config.js';
+import { RARITY_COLORS } from './equipment.js';
+
+export function updateUI() {
+    const stats = getTotalStats();
+
+    // 更新楼层信息
+    document.getElementById('floor').textContent = gameState.floor;
+    document.getElementById('maxFloor').textContent = gameState.maxFloor;
+
+    // 更新等级和经验
+    document.getElementById('level').textContent = gameState.level;
+    document.getElementById('exp').textContent = gameState.exp;
+    document.getElementById('expToLevel').textContent = gameState.expToLevel;
+    const expPercent = (gameState.exp / gameState.expToLevel) * 100;
+    document.getElementById('expBar').style.width = expPercent + '%';
+
+    // 更新角色属性
+    document.getElementById('currentHp').textContent = Math.floor(gameState.hp);
+    document.getElementById('maxHp').textContent = Math.floor(stats.maxHp);
+    document.getElementById('mp').textContent = Math.floor(gameState.mp);
+    document.getElementById('maxMp').textContent = Math.floor(stats.maxMp);
+    document.getElementById('goldDisplay').textContent = gameState.gold;
+
+    // 更新基础属性
+    document.getElementById('strength').textContent = gameState.strength;
+    document.getElementById('agility').textContent = gameState.agility;
+    document.getElementById('intelligence').textContent = gameState.intelligence;
+
+    document.getElementById('attack').textContent = Math.floor(stats.attack);
+    document.getElementById('defense').textContent = Math.floor(stats.defense);
+    document.getElementById('critRate').textContent = stats.critRate.toFixed(1) + '%';
+    document.getElementById('critDamage').textContent = (stats.critDamage * 100).toFixed(0) + '%';
+    document.getElementById('dodge').textContent = stats.dodge.toFixed(1) + '%';
+    document.getElementById('lifesteal').textContent = (stats.lifesteal * 100).toFixed(1) + '%';
+    document.getElementById('penetration').textContent = gameState.penetration || 0;
+
+    // 更新血条和法力条
+    const hpPercent = (gameState.hp / stats.maxHp) * 100;
+    document.getElementById('healthBar').style.width = hpPercent + '%';
+    const mpPercent = (gameState.mp / stats.maxMp) * 100;
+    document.getElementById('manaBar').style.width = mpPercent + '%';
+
+    // 更新购买按钮文本（批量购买）
+    updatePurchaseButtons();
+
+    // 更新装备
+    updateEquipmentDisplay();
+
+    // 更新遗物
+    updateArtifactDisplay();
+
+    // 更新法术
+    updateSpellsDisplay();
+
+    // 更新法术快捷键
+    updateSpellsActions();
+
+    // 更新怪物面板
+    updateMonsterPanel();
+
+    // 更新按钮状态
+    updateButtonStates();
+}
+
+export function updateEquipmentDisplay() {
+    const eq = gameState.equipment;
+    
+    const equipItems = [
+        { slot: 'helmet', name: '头盔', item: eq.helmet },
+        { slot: 'armor', name: '铠甲', item: eq.armor },
+        { slot: 'leftHand', name: '左手', item: eq.leftHand },
+        { slot: 'rightHand', name: '右手', item: eq.rightHand },
+        { slot: 'gloves', name: '护手', item: eq.gloves },
+        { slot: 'boots', name: '靴子', item: eq.boots },
+        { slot: 'necklace', name: '项链', item: eq.necklace },
+        { slot: 'ring1', name: '戒指', item: eq.ring1 }
+    ];
+
+    const container = document.getElementById('equipmentContainer');
+    container.innerHTML = equipItems.map(e => {
+        const item = e.item;
+        const color = item ? RARITY_COLORS[item.rarity] : '#666';
+        const stats = item ? [
+            item.attack > 0 ? `⚔️${item.attack}` : '',
+            item.defense > 0 ? `🛡️${item.defense}` : '',
+            item.hp > 0 ? `❤️${item.hp}` : '',
+            item.critRate > 0 ? `💥${item.critRate}%` : '',
+            item.critDamage > 0 ? `⚡${(item.critDamage*100).toFixed(0)}%` : '',
+            item.dodge > 0 ? `💨${item.dodge}%` : '',
+            item.lifesteal > 0 ? `🩸${(item.lifesteal*100).toFixed(1)}%` : ''
+        ].filter(Boolean).join(' ') : '';
+        
+        return `
+            <div class="equipment-item">
+                <div class="equipment-slot">${e.name}</div>
+                <div class="equipment-name" style="color: ${color}">${item ? item.name : '空'}</div>
+                <div class="equipment-stats">${stats}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+export function updateArtifactDisplay() {
+    const container = document.getElementById('artifactContainer');
+    if (gameState.artifacts.length === 0) {
+        container.innerHTML = '<div class="no-artifact">暂无遗物（击败BOSS可获得）</div>';
+    } else {
+        container.innerHTML = gameState.artifacts.map(a => `
+            <div class="artifact-item">
+                <div class="artifact-name">${a.name}</div>
+                <div class="artifact-desc">${a.description}</div>
+            </div>
+        `).join('');
+    }
+}
+
+export function updateSpellsDisplay() {
+    const container = document.getElementById('spellsContainer');
+    if (gameState.spells.length === 0) {
+        container.innerHTML = '<div class="no-spell">暂无法术（升级后自动学习）</div>';
+    } else {
+        container.innerHTML = gameState.spells.map(s => `
+            <div class="spell-item">
+                <div class="spell-icon">${s.icon}</div>
+                <div class="spell-info">
+                    <div class="spell-name">${s.name}</div>
+                    <div class="spell-desc">${s.description}</div>
+                    <div class="spell-cost">MP: ${s.mpCost}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+export function updateSpellsActions() {
+    const container = document.getElementById('spellsActions');
+    if (!container) return;
+
+    if (gameState.spells.length === 0) {
+        container.innerHTML = '<div class="no-spell">升级后学习法术</div>';
+        return;
+    }
+
+    container.innerHTML = gameState.spells.map((s, index) => {
+        const canCast = gameState.mp >= s.mpCost && gameState.inBattle;
+        return `
+            <button class="spell-btn" data-spell-id="${s.id}" ${canCast ? '' : 'disabled'}>
+                <div class="spell-btn-icon">${s.icon}</div>
+                <div class="spell-btn-name">${s.name}</div>
+                <div class="spell-btn-cost">MP: ${s.mpCost}</div>
+            </button>
+        `;
+    }).join('');
+
+    // 绑定法术按钮事件
+    container.querySelectorAll('.spell-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const spellId = btn.dataset.spellId;
+            window.castSpell(spellId);
+        });
+    });
+}
+
+export function updateMonsterPanel() {
+    const monsterPanel = document.getElementById('monsterPanel');
+    const monsterStats = getMonsterStats();
+    const noMonsterDisplay = document.getElementById('noMonsterDisplay');
+    const monsterContent = document.getElementById('monsterContent');
+
+    if (monsterStats) {
+        monsterPanel.style.display = 'block';
+        monsterPanel.classList.remove('hidden');
+        noMonsterDisplay.style.display = 'none';
+        monsterContent.style.display = 'block';
+
+        document.getElementById('monsterName').textContent = monsterStats.emoji + ' ' + monsterStats.name;
+        if (monsterStats.title) {
+            document.getElementById('monsterTitle').textContent = monsterStats.title;
+            document.getElementById('monsterTitle').style.display = 'block';
+        } else {
+            document.getElementById('monsterTitle').style.display = 'none';
+        }
+        document.getElementById('monsterDesc').textContent = monsterStats.description;
+        document.getElementById('monsterAttack').textContent = monsterStats.attack;
+        document.getElementById('monsterDefense').textContent = monsterStats.defense;
+        
+        const hpPercent = (monsterStats.hp / monsterStats.maxHp) * 100;
+        const hpText = `${Math.floor(monsterStats.hp)} / ${Math.floor(monsterStats.maxHp)}`;
+        
+        document.getElementById('monsterHpBar').style.width = hpPercent + '%';
+        document.getElementById('monsterHpBar').textContent = hpText;
+        document.getElementById('monsterHpText').textContent = hpText + ' HP';
+    } else {
+        monsterPanel.style.display = 'block';
+        monsterPanel.classList.add('hidden');
+        noMonsterDisplay.style.display = 'block';
+        monsterContent.style.display = 'none';
+    }
+}
+
+export function updateButtonStates() {
+    const inBattle = gameState.inBattle;
+    const isAutoBattle = gameState.isAutoBattle;
+    const stats = getTotalStats();
+
+    const healBtn = document.getElementById('healBtn');
+    const fleeBtn = document.getElementById('fleeBtn');
+    const shopBtn = document.getElementById('shopBtn');
+    const autoBtn = document.getElementById('autoBattleBtn');
+
+    if (healBtn) healBtn.disabled = gameState.gold < GAME_CONFIG.HEAL_COST || gameState.hp >= stats.maxHp;
+    if (fleeBtn) fleeBtn.disabled = !inBattle;
+    if (shopBtn) shopBtn.disabled = gameState.gold < 50;
+    
+    // 更新自动战斗按钮
+    if (autoBtn) {
+        autoBtn.textContent = isAutoBattle ? '⏸️ 停止战斗' : '▶️ 开始自动战斗';
+        autoBtn.className = isAutoBattle ? 'action-btn shop' : 'action-btn attack';
+    }
+}
+
+export function addLog(message, type = 'info') {
+    const logPanel = document.getElementById('logPanel');
+
+    // 如果是楼层变更，清理之前的日志
+    if (type === 'floor') {
+        logPanel.innerHTML = '';
+    }
+
+    const logEntry = document.createElement('div');
+    logEntry.className = `log-entry log-${type}`;
+    logEntry.innerHTML = message;
+    logPanel.insertBefore(logEntry, logPanel.firstChild);
+
+    // 限制日志数量
+    while (logPanel.children.length > 100) {
+        logPanel.removeChild(logPanel.lastChild);
+    }
+}
+
+export function addBattleLogEntry(logEntry) {
+    const logPanel = document.getElementById('logPanel');
+    const entry = document.createElement('div');
+    entry.className = `log-entry log-battle`;
+    
+    let message = logEntry.message;
+    if (logEntry.damage !== undefined) {
+        if (logEntry.isCrit) {
+            message = `<span style="color: #eab308;">⚡ ${message}</span>`;
+        } else if (logEntry.type === 'monsterAttack') {
+            message = `<span style="color: #ef4444;">${message}</span>`;
+        }
+    }
+    if (logEntry.healAmount !== undefined) {
+        message = `<span style="color: #22c55e;">${message}</span>`;
+    }
+    
+    entry.innerHTML = message;
+    logPanel.insertBefore(entry, logPanel.firstChild);
+
+    while (logPanel.children.length > 100) {
+        logPanel.removeChild(logPanel.lastChild);
+    }
+}
+
+export function showGameOver() {
+    document.getElementById('finalFloor').textContent = gameState.floor;
+    document.getElementById('finalGold').textContent = gameState.gold;
+    document.getElementById('gameOverModal').classList.add('active');
+}
+
+export function hideGameOver() {
+    document.getElementById('gameOverModal').classList.remove('active');
+}
+
+// 更新购买按钮文本（批量购买）
+export function updatePurchaseButtons() {
+    // 更新治疗按钮
+    const healMultiplier = calculateBatchMultiplier(GAME_CONFIG.HEAL_COST);
+    const healBtn = document.getElementById('healBtn');
+    if (healBtn) {
+        if (healMultiplier > 1) {
+            healBtn.textContent = `💚 治疗 (${GAME_CONFIG.HEAL_COST * healMultiplier}💰 x${healMultiplier})`;
+        } else {
+            healBtn.textContent = `💚 治疗 (${GAME_CONFIG.HEAL_COST}💰)`;
+        }
+    }
+
+    // 更新商店按钮
+    const shopMultiplier = calculateBatchMultiplier(GAME_CONFIG.EQUIPMENT_COST);
+    const shopBtn = document.getElementById('shopBtn');
+    if (shopBtn) {
+        if (shopMultiplier > 1) {
+            shopBtn.textContent = `🏪 随机装备 (${GAME_CONFIG.EQUIPMENT_COST * shopMultiplier}💰 x${shopMultiplier})`;
+        } else {
+            shopBtn.textContent = `🏪 随机装备 (${GAME_CONFIG.EQUIPMENT_COST}💰)`;
+        }
+    }
+}
+
+// 计算批量购买次数
+function calculateBatchMultiplier(baseCost) {
+    if (gameState.gold >= baseCost * 100) return 100;
+    if (gameState.gold >= baseCost * 50) return 50;
+    if (gameState.gold >= baseCost * 20) return 20;
+    if (gameState.gold >= baseCost * 10) return 10;
+    if (gameState.gold >= baseCost * 5) return 5;
+    return 1;
+}
+
+export function openShopPanel() {
+    const multiplier = calculateBatchMultiplier(GAME_CONFIG.EQUIPMENT_COST);
+    const result = buyRandomEquipment(multiplier);
+
+    if (result.success) {
+        // 批量处理获得的物品
+        result.items.forEach((item, index) => {
+            setTimeout(() => {
+                const equipResult = equipObtainedItem(item);
+                let message = '';
+
+                if (item.type) {
+                    // 装备
+                    const stats = [
+                        item.attack > 0 ? `攻击+${item.attack}` : '',
+                        item.defense > 0 ? `防御+${item.defense}` : '',
+                        item.hp > 0 ? `生命+${item.hp}` : '',
+                        item.critRate > 0 ? `暴击+${item.critRate}%` : '',
+                        item.critDamage > 0 ? `暴击伤害+${(item.critDamage*100).toFixed(0)}%` : '',
+                        item.dodge > 0 ? `闪避+${item.dodge}%` : '',
+                        item.lifesteal > 0 ? `吸血+${(item.lifesteal*100).toFixed(1)}%` : ''
+                    ].filter(Boolean).join(', ');
+                    message = `<span style="color: ${RARITY_COLORS[item.rarity]}">[${RARITY_NAMES[item.rarity]}] ${item.name}</span><br>`;
+                    message += `<span style="font-size: 0.9em;">${stats}</span><br>`;
+                    message += equipResult.equipped ? `<span style="color: #22c55e;">✓ ${equipResult.message}</span>` : `<span style="color: #f59e0b;">✗ ${equipResult.message}</span>`;
+                } else {
+                    // 遗物
+                    message = `<span style="color: #eab308;">★ ${item.name}</span><br>`;
+                    message += `<span style="font-size: 0.9em;">${item.description}</span><br>`;
+                    message += `<span style="color: #22c55e;">✓ ${equipResult.message}</span>`;
+                }
+
+                addLog(message, 'item');
+            }, index * 200); // 每个物品间隔200ms显示
+        });
+
+        setTimeout(() => {
+            addLog(`${result.message}`, 'item');
+            updateUI();
+        }, result.items.length * 200);
+    } else {
+        addLog(result.message, 'info');
+    }
+}

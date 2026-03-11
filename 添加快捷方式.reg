@@ -1,0 +1,7 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\.roguelike]
+@="RoguelikeGameFile"
+
+[HKEY_CLASSES_ROOT\RoguelikeGameFile\shell\open\command]
+@="\"c:\\Users\\user\\WorkBuddy\\20260310102455\\启动游戏.bat\""

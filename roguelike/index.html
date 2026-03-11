@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>无尽地下城 - Roguelike冒险</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>⚔️ 无尽地下城</h1>
+
+        <div class="floor-info">
+            🏰 第 <span id="floor">1</span> 层 | 🏆 最高纪录: 第 <span id="maxFloor">1</span> 层
+        </div>
+
+        <div class="panel">
+            <h2>⚡ 操作</h2>
+            <div class="actions-panel">
+                <button class="action-btn attack" id="autoBattleBtn">▶️ 开始自动战斗</button>
+            </div>
+        </div>
+
+        <div class="game-layout">
+            <!-- 左侧：怪物区域 -->
+            <div class="monster-area">
+                <div class="panel monster-panel" id="monsterPanel">
+                    <div class="monster-header">
+                        <div class="no-monster" id="noMonsterDisplay" style="display: none;">
+                            <div class="no-monster-icon">🌙</div>
+                            <div>暂无怪物<br>点击"开始自动战斗"</div>
+                        </div>
+                        <div id="monsterContent">
+                            <div class="monster-name" id="monsterName"></div>
+                            <div class="monster-title" id="monsterTitle" style="display: none;"></div>
+                            <div class="monster-desc" id="monsterDesc"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="monster-hp-bar">
+                        <div class="monster-hp-bar-inner" id="monsterHpBar" style="width: 0%;">0 / 0</div>
+                    </div>
+                    <div class="monster-hp-text" id="monsterHpText">0 / 0 HP</div>
+                    
+                    <div class="monster-stats">
+                        <div class="monster-stat-item">
+                            <div class="monster-stat-label">⚔️ 攻击力</div>
+                            <div class="monster-stat-value" id="monsterAttack">-</div>
+                        </div>
+                        <div class="monster-stat-item">
+                            <div class="monster-stat-label">🛡️ 防御力</div>
+                            <div class="monster-stat-value" id="monsterDefense">-</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h2>💰 当前金币</h2>
+                    <div style="font-size: 2em; color: #ffd700; text-align: center; font-weight: bold;" id="goldDisplay">100</div>
+                </div>
+            </div>
+
+            <!-- 中间：日志区域 -->
+            <div class="log-area">
+                <div class="panel" style="flex: 1;">
+                    <h2>📜 冒险日志</h2>
+                    <div class="log-panel" id="logPanel"></div>
+                </div>
+            </div>
+
+            <!-- 右侧：属性面板 -->
+            <div class="stats-area">
+                <button class="toggle-stats-btn" id="toggleStatsBtn">📊 收起属性 ▲</button>
+
+                <div class="panel" id="statsPanel">
+                    <h2>👤 角色属性</h2>
+                    <div class="level-exp-bar">
+                        <span>等级: <strong id="level">1</strong></span>
+                        <div class="exp-bar-container">
+                            <div class="exp-bar" id="expBar" style="width: 0%"></div>
+                            <span class="exp-text"><span id="exp">0</span> / <span id="expToLevel">100</span> EXP</span>
+                        </div>
+                    </div>
+                    <div class="health-bar-container">
+                        <div class="health-bar" id="healthBar" style="width: 100%"></div>
+                        <div class="health-text"><span id="currentHp">200</span> / <span id="maxHp">200</span> HP</div>
+                    </div>
+                    <div class="mana-bar-container">
+                        <div class="mana-bar" id="manaBar" style="width: 100%"></div>
+                        <div class="mana-text"><span id="mp">100</span> / <span id="maxMp">100</span> MP</div>
+                    </div>
+                    <div class="base-attributes">
+                        <div class="base-attr-item">
+                            <span class="base-attr-icon">💪</span>
+                            <div>
+                                <div class="base-attr-label">力量</div>
+                                <div class="base-attr-value" id="strength">10</div>
+                            </div>
+                        </div>
+                        <div class="base-attr-item">
+                            <span class="base-attr-icon">⚡</span>
+                            <div>
+                                <div class="base-attr-label">敏捷</div>
+                                <div class="base-attr-value" id="agility">10</div>
+                            </div>
+                        </div>
+                        <div class="base-attr-item">
+                            <span class="base-attr-icon">🧠</span>
+                            <div>
+                                <div class="base-attr-label">智力</div>
+                                <div class="base-attr-value" id="intelligence">10</div>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-icon">⚔️</span>
+                            <div>
+                                <div class="stat-label">攻击力</div>
+                                <div class="stat-value" id="attack">35</div>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-icon">🛡️</span>
+                            <div>
+                                <div class="stat-label">防御力</div>
+                                <div class="stat-value" id="defense">25</div>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-icon">💥</span>
+                            <div>
+                                <div class="stat-label">暴击率</div>
+                                <div class="stat-value" id="critRate">8%</div>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-icon">⚡</span>
+                            <div>
+                                <div class="stat-label">暴击伤害</div>
+                                <div class="stat-value" id="critDamage">50%</div>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-icon">💨</span>
+                            <div>
+                                <div class="stat-label">闪避率</div>
+                                <div class="stat-value" id="dodge">5%</div>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-icon">🩸</span>
+                            <div>
+                                <div class="stat-label">吸血</div>
+                                <div class="stat-value" id="lifesteal">3%</div>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-icon">🎯</span>
+                            <div>
+                                <div class="stat-label">穿透</div>
+                                <div class="stat-value" id="penetration">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-top: 20px; max-height: 300px; overflow: hidden;">
+                    <h2>🎒 装备栏</h2>
+                    <div class="equipment-container" id="equipmentContainer" style="max-height: 200px;"></div>
+                </div>
+
+                <div class="panel" style="margin-top: 20px; max-height: 250px; overflow: hidden;">
+                    <h2>★ 遗物</h2>
+                    <div class="artifact-container" id="artifactContainer" style="max-height: 150px;"></div>
+                </div>
+
+                <div class="panel" style="margin-top: 20px; max-height: 250px; overflow: hidden;">
+                    <h2>✨ 法术</h2>
+                    <div class="spells-container" id="spellsContainer" style="max-height: 150px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Banner广告位（预留） -->
+    <div class="banner-ad-container">
+        <div id="banner-ad">广告位 - 可接入百度联盟/Google AdSense</div>
+    </div>
+
+    <!-- 广告功能区 -->
+    <div class="ad-features-panel">
+        <button class="ad-feature-btn" id="adReviveBtn" style="display: none;">
+            🎬 看广告复活
+        </button>
+        <button class="ad-feature-btn" id="adSpeedBtn">
+            ⚡ 看广告2倍速度
+        </button>
+        <button class="ad-feature-btn" id="adRecoveryBtn">
+            ✨ 看广告全满恢复
+        </button>
+    </div>
+
+    <div class="modal" id="gameOverModal">
+        <h2>💀 游戏结束</h2>
+        <p>你的冒险在第 <span id="finalFloor">1</span> 层结束了</p>
+        <p>💰 获得金币: <span id="finalGold">0</span></p>
+        <button class="restart-btn">重新开始</button>
+        <button class="ad-feature-btn" id="adGameOverReviveBtn" style="display: none;">
+            🎬 看广告原地复活
+        </button>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
