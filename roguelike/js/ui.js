@@ -9,22 +9,37 @@ export function updateUI() {
     const stats = getTotalStats();
 
     // 更新楼层信息
-    document.getElementById('floor').textContent = gameState.floor;
-    document.getElementById('maxFloor').textContent = gameState.maxFloor;
+    const floorEl = document.getElementById('floor');
+    const maxFloorEl = document.getElementById('maxFloor');
+    if (floorEl && gameState.floor !== undefined) floorEl.textContent = gameState.floor;
+    if (maxFloorEl && gameState.maxFloor !== undefined) maxFloorEl.textContent = gameState.maxFloor;
 
     // 更新等级和经验
-    document.getElementById('level').textContent = gameState.level;
-    document.getElementById('exp').textContent = gameState.exp;
-    document.getElementById('expToLevel').textContent = gameState.expToLevel;
-    const expPercent = (gameState.exp / gameState.expToLevel) * 100;
-    document.getElementById('expBar').style.width = expPercent + '%';
+    const levelEl = document.getElementById('level');
+    const expEl = document.getElementById('exp');
+    const expToLevelEl = document.getElementById('expToLevel');
+    const expBar = document.getElementById('expBar');
+
+    if (levelEl && gameState.level !== undefined) levelEl.textContent = gameState.level;
+    if (expEl && gameState.exp !== undefined) expEl.textContent = gameState.exp;
+    if (expToLevelEl && gameState.expToLevel !== undefined) expToLevelEl.textContent = gameState.expToLevel;
+    if (expBar && gameState.exp !== undefined && gameState.expToLevel !== undefined) {
+        const expPercent = (gameState.exp / gameState.expToLevel) * 100;
+        expBar.style.width = expPercent + '%';
+    }
 
     // 更新角色属性
-    document.getElementById('currentHp').textContent = Math.floor(gameState.hp);
-    document.getElementById('maxHp').textContent = Math.floor(stats.maxHp);
-    document.getElementById('mp').textContent = Math.floor(gameState.mp);
-    document.getElementById('maxMp').textContent = Math.floor(stats.maxMp);
-    document.getElementById('goldDisplay').textContent = gameState.gold;
+    const currentHpEl = document.getElementById('currentHp');
+    const maxHpEl = document.getElementById('maxHp');
+    const mpEl = document.getElementById('mp');
+    const maxMpEl = document.getElementById('maxMp');
+    const goldEl = document.getElementById('goldDisplay');
+
+    if (currentHpEl && gameState.hp !== undefined) currentHpEl.textContent = Math.floor(gameState.hp);
+    if (maxHpEl && stats.maxHp) maxHpEl.textContent = Math.floor(stats.maxHp);
+    if (mpEl && gameState.mp !== undefined) mpEl.textContent = Math.floor(gameState.mp);
+    if (maxMpEl && stats.maxMp) maxMpEl.textContent = Math.floor(stats.maxMp);
+    if (goldEl && gameState.gold !== undefined) goldEl.textContent = gameState.gold;
 
     // 更新基础属性
     document.getElementById('strength').textContent = gameState.strength;
