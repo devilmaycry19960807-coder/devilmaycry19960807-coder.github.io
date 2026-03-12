@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Allow: /ads.txt
+Sitemap: https://devilmaycry19960807-coder.github.io/---Roguelike-/sitemap.xml
