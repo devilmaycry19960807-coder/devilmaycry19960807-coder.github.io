@@ -1,8 +1,8 @@
 // 探索系统
-import { gameState, updateHp, updateGold, saveGame, getTotalStats } from './gameState.js';
+import { gameState, updateHp, updateGold, saveGame, getTotalStats, incrementFloor } from './gameState.js';
 import { generateMonster, startBattle } from './battle.js';
 import { GAME_CONFIG } from './config.js';
-import { addLog } from './ui.js';
+import { addLog, updateUI } from './ui.js';
 
 export function explore() {
     if (gameState.inBattle) return { success: false, message: '正在战斗中！' };
@@ -30,13 +30,29 @@ export function explore() {
         // 显示宝箱翻倍选项
         showChestModal(goldFound);
 
+        // 宝箱不算探索，不增加楼层
         return {
             success: true,
             type: 'chest',
             message: `发现了宝箱！`,
-            gold: goldFound
+            gold: goldFound,
+            noFloorIncrement: true
         };
     } else if (roll < GAME_CONFIG.MONSTER_SPAWN_RATE + GAME_CONFIG.CHEST_SPAWN_RATE + GAME_CONFIG.FOUNTAIN_SPAWN_RATE) {
+        // 发现生命之泉
+        const stats = getTotalStats();
+        const hpRestore = Math.floor(stats.maxHp * GAME_CONFIG.HEAL_PERCENT);
+        updateHp(hpRestore);
+        saveGame(); // 自动存档
+
+        // 泉水不算探索，不增加楼层
+        return {
+            success: true,
+            type: 'fountain',
+            message: `发现了生命之泉，恢复 ${hpRestore} HP！`,
+            hpRestore: hpRestore,
+            noFloorIncrement: true
+        };
         // 发现生命之泉
         const stats = getTotalStats();
         const hpRestore = Math.floor(stats.maxHp * GAME_CONFIG.HEAL_PERCENT);
@@ -110,7 +126,7 @@ function showChestModal(goldFound) {
 
         // 重置探索标志
         import('./game.js').then(m => {
-            m.isExploring = false;
+            m.resetExploringFlag();
             console.log('Reset isExploring flag');
         });
     }
@@ -143,7 +159,9 @@ function showChestModal(goldFound) {
             addLog('▶️ 自动战斗继续！', 'info');
             updateUI();
             // 从 game.js 导入的 startAutoBattleLoop
-            import('./game.js').then(m => m.startAutoBattleLoop());
+            import('./game.js').then(m => {
+                m.startAutoBattleLoop();
+            });
         }
     });
 
@@ -163,7 +181,9 @@ function showChestModal(goldFound) {
                 if (autoBtn) autoBtn.textContent = '⏸️ 停止战斗';
                 addLog('▶️ 自动战斗继续！', 'info');
                 updateUI();
-                import('./game.js').then(m => m.startAutoBattleLoop());
+                import('./game.js').then(m => {
+                    m.startAutoBattleLoop();
+                });
             }
         }, 1000);
     });

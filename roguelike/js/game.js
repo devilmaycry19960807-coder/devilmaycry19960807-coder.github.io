@@ -120,8 +120,14 @@ let autoBattleInterval = null;
 let combatInterval = null;
 let isExploring = false;
 
-// 导出 isExploring 以便其他模块可以重置
+// 导出 isExploring 和重置函数
 export { isExploring };
+
+// 重置探索标志（供外部模块调用）
+export function resetExploringFlag() {
+    isExploring = false;
+    console.log('isExploring flag reset');
+}
 
 function startAutoBattleLoop() {
     console.log('Starting auto battle loop');
