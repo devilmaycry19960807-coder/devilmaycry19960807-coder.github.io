@@ -120,6 +120,9 @@ let autoBattleInterval = null;
 let combatInterval = null;
 let isExploring = false;
 
+// 导出 isExploring 以便其他模块可以重置
+export { isExploring };
+
 function startAutoBattleLoop() {
     console.log('Starting auto battle loop');
 

@@ -107,6 +107,12 @@ function showChestModal(goldFound) {
         gameState.isAutoBattle = false;
         const autoBtn = document.getElementById('autoBattleBtn');
         if (autoBtn) autoBtn.textContent = '▶️ 开始自动战斗';
+
+        // 重置探索标志
+        import('./game.js').then(m => {
+            m.isExploring = false;
+            console.log('Reset isExploring flag');
+        });
     }
 
     const chestModal = document.createElement('div');
@@ -135,6 +141,7 @@ function showChestModal(goldFound) {
             const autoBtn = document.getElementById('autoBattleBtn');
             if (autoBtn) autoBtn.textContent = '⏸️ 停止战斗';
             addLog('▶️ 自动战斗继续！', 'info');
+            updateUI();
             // 从 game.js 导入的 startAutoBattleLoop
             import('./game.js').then(m => m.startAutoBattleLoop());
         }
@@ -155,6 +162,7 @@ function showChestModal(goldFound) {
                 const autoBtn = document.getElementById('autoBattleBtn');
                 if (autoBtn) autoBtn.textContent = '⏸️ 停止战斗';
                 addLog('▶️ 自动战斗继续！', 'info');
+                updateUI();
                 import('./game.js').then(m => m.startAutoBattleLoop());
             }
         }, 1000);
