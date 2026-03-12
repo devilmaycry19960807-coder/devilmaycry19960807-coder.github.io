@@ -12,7 +12,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>⚔️ 无尽地下城</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h1>⚔️ 无尽地下城</h1>
+            <button id="langToggleBtn" style="padding: 8px 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">🌐 中文</button>
+        </div>
 
         <div class="floor-info">
             🏰 第 <span id="floor">1</span> 层 | 🏆 最高纪录: 第 <span id="maxFloor">1</span> 层
@@ -216,6 +219,7 @@
         </button>
     </div>
 
+    <script type="module" src="js/i18n.js"></script>
     <script type="module" src="js/main.js"></script>
 </body>
 </html>

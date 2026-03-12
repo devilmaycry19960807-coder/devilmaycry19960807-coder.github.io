@@ -1,12 +1,20 @@
 // 主入口文件
 import * as Game from './game.js';
 import { Monetization } from './monetization.js';
+import { toggleLanguage, initI18n, getCurrentLanguage } from './i18n.js';
 
 console.log('Main script loaded');
 
 // DOM加载完成后初始化
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, initializing game');
+
+    // 初始化国际化
+    initI18n();
+
+    // 更新语言切换按钮文字
+    updateLangButton();
+
     Game.initGame();
 
     // 绑定事件监听器
@@ -66,5 +74,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 语言切换按钮
+    const langToggleBtn = document.getElementById('langToggleBtn');
+    if (langToggleBtn) {
+        langToggleBtn.addEventListener('click', () => {
+            toggleLanguage();
+            updateLangButton();
+        });
+    }
+
     console.log('All event listeners attached');
 });
+
+// 更新语言按钮文字
+function updateLangButton() {
+    const lang = getCurrentLanguage();
+    const btn = document.getElementById('langToggleBtn');
+    if (btn) {
+        btn.textContent = lang === 'zh' ? '🌐 中文' : '🌐 EN';
+    }
+}
