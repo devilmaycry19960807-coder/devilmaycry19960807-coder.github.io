@@ -853,6 +853,8 @@ function buyShopItem(shopItem, modal, allItems) {
     ].filter(Boolean).join('、');
 
     addLog(`购买成功！${shopItem.item.name} - ${stats}`, 'item');
+
+    // 先更新装备栏显示
     updateUI();
 
     // 禁用已购买按钮
@@ -862,4 +864,7 @@ function buyShopItem(shopItem, modal, allItems) {
         btn.disabled = true;
         btn.textContent = '已购买';
     }
+
+    // 再次更新确保装备显示正确
+    setTimeout(() => updateUI(), 100);
 }
