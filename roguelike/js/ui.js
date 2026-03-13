@@ -4,15 +4,27 @@ import { getMonsterStats, getBattleLog } from './battle.js';
 import { buyRandomEquipment, equipObtainedItem } from './shop.js';
 import { GAME_CONFIG } from './config.js';
 import { RARITY_COLORS } from './equipment.js';
+import { getCurrentLanguage, translations } from './i18n.js';
+import { getEquipmentTranslation, getArtifactTranslation, getSpellTranslation, getMonsterTranslation, getMonsterDescriptionTranslation } from './translations.js';
 
 export function updateUI() {
     const stats = getTotalStats();
+    const lang = getCurrentLanguage();
+    const t = translations[lang];
 
-    // 更新楼层信息
+    // 更新楼层信息（需要翻译）
     const floorEl = document.getElementById('floor');
     const maxFloorEl = document.getElementById('maxFloor');
     if (floorEl && gameState.floor !== undefined) floorEl.textContent = gameState.floor;
     if (maxFloorEl && gameState.maxFloor !== undefined) maxFloorEl.textContent = gameState.maxFloor;
+
+    // 更新楼层UI文字
+    const floorInfoEl = document.querySelector('.floor-info');
+    if (floorInfoEl && t.floorInfo) {
+        floorInfoEl.textContent = t.floorInfo
+            .replace('FLOOR', gameState.floor)
+            .replace('MAXFLOOR', gameState.maxFloor);
+    }
 
     // 更新等级和经验
     const levelEl = document.getElementById('level');
@@ -84,16 +96,18 @@ export function updateUI() {
 
 export function updateEquipmentDisplay() {
     const eq = gameState.equipment;
-    
+    const lang = getCurrentLanguage();
+    const t = translations[lang];
+
     const equipItems = [
-        { slot: 'helmet', name: '头盔', item: eq.helmet },
-        { slot: 'armor', name: '铠甲', item: eq.armor },
-        { slot: 'leftHand', name: '左手', item: eq.leftHand },
-        { slot: 'rightHand', name: '右手', item: eq.rightHand },
-        { slot: 'gloves', name: '护手', item: eq.gloves },
-        { slot: 'boots', name: '靴子', item: eq.boots },
-        { slot: 'necklace', name: '项链', item: eq.necklace },
-        { slot: 'ring1', name: '戒指', item: eq.ring1 }
+        { slot: 'helmet', name: t.equipmentSlots.helmet, item: eq.helmet },
+        { slot: 'armor', name: t.equipmentSlots.armor, item: eq.armor },
+        { slot: 'leftHand', name: t.equipmentSlots.leftHand, item: eq.leftHand },
+        { slot: 'rightHand', name: t.equipmentSlots.rightHand, item: eq.rightHand },
+        { slot: 'gloves', name: t.equipmentSlots.gloves, item: eq.gloves },
+        { slot: 'boots', name: t.equipmentSlots.boots, item: eq.boots },
+        { slot: 'necklace', name: t.equipmentSlots.necklace, item: eq.necklace },
+        { slot: 'ring1', name: t.equipmentSlots.ring, item: eq.ring1 }
     ];
 
     const container = document.getElementById('equipmentContainer');
@@ -109,11 +123,14 @@ export function updateEquipmentDisplay() {
             item.dodge > 0 ? `💨${item.dodge}%` : '',
             item.lifesteal > 0 ? `🩸${(item.lifesteal*100).toFixed(1)}%` : ''
         ].filter(Boolean).join(' ') : '';
-        
+
+        // 使用翻译函数获取装备名称
+        const translatedName = item ? getEquipmentTranslation(item.name, lang) : t.emptySlot;
+
         return `
             <div class="equipment-item">
                 <div class="equipment-slot">${e.name}</div>
-                <div class="equipment-name" style="color: ${color}">${item ? item.name : '空'}</div>
+                <div class="equipment-name" style="color: ${color}">${translatedName}</div>
                 <div class="equipment-stats">${stats}</div>
             </div>
         `;
@@ -121,52 +138,68 @@ export function updateEquipmentDisplay() {
 }
 
 export function updateArtifactDisplay() {
+    const lang = getCurrentLanguage();
+    const t = translations[lang];
     const container = document.getElementById('artifactContainer');
     if (gameState.artifacts.length === 0) {
-        container.innerHTML = '<div class="no-artifact">暂无遗物（击败BOSS可获得）</div>';
+        container.innerHTML = `<div class="no-artifact">${t.noArtifact}</div>`;
     } else {
-        container.innerHTML = gameState.artifacts.map(a => `
+        container.innerHTML = gameState.artifacts.map(a => {
+            // 使用翻译函数获取遗物名称和描述
+            const translatedName = getArtifactTranslation(a.name, lang, 'name');
+            const translatedDesc = getArtifactTranslation(a.name, lang, 'description');
+            return `
             <div class="artifact-item">
-                <div class="artifact-name">${a.name}</div>
-                <div class="artifact-desc">${a.description}</div>
+                <div class="artifact-name">${translatedName}</div>
+                <div class="artifact-desc">${translatedDesc}</div>
             </div>
-        `).join('');
+        `}).join('');
     }
 }
 
 export function updateSpellsDisplay() {
+    const lang = getCurrentLanguage();
+    const t = translations[lang];
     const container = document.getElementById('spellsContainer');
     if (gameState.spells.length === 0) {
-        container.innerHTML = '<div class="no-spell">暂无法术（升级后自动学习）</div>';
+        container.innerHTML = `<div class="no-spell">${t.noSpell}</div>`;
     } else {
-        container.innerHTML = gameState.spells.map(s => `
+        container.innerHTML = gameState.spells.map(s => {
+            // 使用新的翻译函数获取技能名称和描述
+            const displayName = getSpellTranslation(s.id, lang, 'name');
+            const displayDesc = getSpellTranslation(s.id, lang, 'description');
+            return `
             <div class="spell-item">
                 <div class="spell-icon">${s.icon}</div>
                 <div class="spell-info">
-                    <div class="spell-name">${s.name}</div>
-                    <div class="spell-desc">${s.description}</div>
+                    <div class="spell-name">${displayName}</div>
+                    <div class="spell-desc">${displayDesc}</div>
                     <div class="spell-cost">MP: ${s.mpCost}</div>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
     }
 }
 
 export function updateSpellsActions() {
+    const lang = getCurrentLanguage();
+    const t = translations[lang];
     const container = document.getElementById('spellsActions');
     if (!container) return;
 
     if (gameState.spells.length === 0) {
-        container.innerHTML = '<div class="no-spell">升级后学习法术</div>';
+        container.innerHTML = `<div class="no-spell">${t.upgradeSpell}</div>`;
         return;
     }
 
     container.innerHTML = gameState.spells.map((s, index) => {
         const canCast = gameState.mp >= s.mpCost && gameState.inBattle;
+        // 使用新的翻译函数获取技能名称
+        const displayName = getSpellTranslation(s.id, lang, 'name');
         return `
             <button class="spell-btn" data-spell-id="${s.id}" ${canCast ? '' : 'disabled'}>
                 <div class="spell-btn-icon">${s.icon}</div>
-                <div class="spell-btn-name">${s.name}</div>
+                <div class="spell-btn-name">${displayName}</div>
                 <div class="spell-btn-cost">MP: ${s.mpCost}</div>
             </button>
         `;
@@ -186,6 +219,8 @@ export function updateMonsterPanel() {
     const monsterStats = getMonsterStats();
     const noMonsterDisplay = document.getElementById('noMonsterDisplay');
     const monsterContent = document.getElementById('monsterContent');
+    const lang = getCurrentLanguage();
+    const t = translations[lang];
 
     if (monsterStats) {
         monsterPanel.style.display = 'block';
@@ -193,16 +228,28 @@ export function updateMonsterPanel() {
         noMonsterDisplay.style.display = 'none';
         monsterContent.style.display = 'block';
 
-        document.getElementById('monsterName').textContent = monsterStats.emoji + ' ' + monsterStats.name;
+        // 翻译怪物名称和描述
+        const translatedName = getMonsterTranslation(monsterStats.name, lang);
+        const translatedDesc = getMonsterDescriptionTranslation(monsterStats.description, lang);
+
+        document.getElementById('monsterName').textContent = monsterStats.emoji + ' ' + translatedName;
         if (monsterStats.title) {
             document.getElementById('monsterTitle').textContent = monsterStats.title;
             document.getElementById('monsterTitle').style.display = 'block';
         } else {
             document.getElementById('monsterTitle').style.display = 'none';
         }
-        document.getElementById('monsterDesc').textContent = monsterStats.description;
+        document.getElementById('monsterDesc').textContent = translatedDesc;
         document.getElementById('monsterAttack').textContent = monsterStats.attack;
         document.getElementById('monsterDefense').textContent = monsterStats.defense;
+
+        // 翻译攻击力和防御力标签
+        if (t.stats && t.stats.attack) {
+            document.getElementById('monsterAttackLabel').textContent = '⚔️ ' + t.stats.attack;
+        }
+        if (t.stats && t.stats.defense) {
+            document.getElementById('monsterDefenseLabel').textContent = '🛡️ ' + t.stats.defense;
+        }
         
         const hpPercent = (monsterStats.hp / monsterStats.maxHp) * 100;
         const hpText = `${Math.floor(monsterStats.hp)} / ${Math.floor(monsterStats.maxHp)}`;
@@ -329,6 +376,8 @@ function calculateBatchMultiplier(baseCost) {
 }
 
 export function openShopPanel() {
+    const lang = getCurrentLanguage();
+    const t = translations[lang];
     const multiplier = calculateBatchMultiplier(GAME_CONFIG.EQUIPMENT_COST);
     const result = buyRandomEquipment(multiplier);
 
@@ -342,21 +391,26 @@ export function openShopPanel() {
                 if (item.type) {
                     // 装备
                     const stats = [
-                        item.attack > 0 ? `攻击+${item.attack}` : '',
-                        item.defense > 0 ? `防御+${item.defense}` : '',
-                        item.hp > 0 ? `生命+${item.hp}` : '',
-                        item.critRate > 0 ? `暴击+${item.critRate}%` : '',
-                        item.critDamage > 0 ? `暴击伤害+${(item.critDamage*100).toFixed(0)}%` : '',
-                        item.dodge > 0 ? `闪避+${item.dodge}%` : '',
-                        item.lifesteal > 0 ? `吸血+${(item.lifesteal*100).toFixed(1)}%` : ''
+                        item.attack > 0 ? `⚔️+${item.attack}` : '',
+                        item.defense > 0 ? `🛡️+${item.defense}` : '',
+                        item.hp > 0 ? `❤️+${item.hp}` : '',
+                        item.critRate > 0 ? `💥+${item.critRate}%` : '',
+                        item.critDamage > 0 ? `⚡+${(item.critDamage*100).toFixed(0)}%` : '',
+                        item.dodge > 0 ? `💨+${item.dodge}%` : '',
+                        item.lifesteal > 0 ? `🩸+${(item.lifesteal*100).toFixed(1)}%` : ''
                     ].filter(Boolean).join(', ');
-                    message = `<span style="color: ${RARITY_COLORS[item.rarity]}">[${RARITY_NAMES[item.rarity]}] ${item.name}</span><br>`;
+                    // 使用翻译函数获取装备名称
+                    const translatedName = getEquipmentTranslation(item.name, lang);
+                    message = `<span style="color: ${RARITY_COLORS[item.rarity]}">[${t.rarityNames[item.rarity]}] ${translatedName}</span><br>`;
                     message += `<span style="font-size: 0.9em;">${stats}</span><br>`;
                     message += equipResult.equipped ? `<span style="color: #22c55e;">✓ ${equipResult.message}</span>` : `<span style="color: #f59e0b;">✗ ${equipResult.message}</span>`;
                 } else {
                     // 遗物
-                    message = `<span style="color: #eab308;">★ ${item.name}</span><br>`;
-                    message += `<span style="font-size: 0.9em;">${item.description}</span><br>`;
+                    // 使用翻译函数获取遗物名称和描述
+                    const translatedName = getArtifactTranslation(item.name, lang, 'name');
+                    const translatedDesc = getArtifactTranslation(item.name, lang, 'description');
+                    message = `<span style="color: #eab308;">★ ${translatedName}</span><br>`;
+                    message += `<span style="font-size: 0.9em;">${translatedDesc}</span><br>`;
                     message += `<span style="color: #22c55e;">✓ ${equipResult.message}</span>`;
                 }
 

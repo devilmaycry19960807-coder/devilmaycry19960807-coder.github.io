@@ -7,6 +7,7 @@ import { calculateBatchMultiplier } from './exploration.js';
 import { RARITY_COLORS, RARITY_NAMES, calculateEquipmentScore, EQUIPMENT } from './equipment.js';
 import { claimDailyReward, checkDailyReward, getDailyReward } from './dailyReward.js';
 import { equipObtainedItem } from './shop.js';
+import { getCurrentLanguage, translations } from './i18n.js';
 
 console.log('Game module loaded');
 
@@ -129,8 +130,13 @@ export function resetExploringFlag() {
     console.log('isExploring flag reset');
 }
 
-function startAutoBattleLoop() {
-    console.log('Starting auto battle loop');
+// 启动自动战斗循环（可选：强制重置探索标志）
+export function startAutoBattleLoop(forceReset = false) {
+    console.log('Starting auto battle loop, forceReset:', forceReset);
+
+    if (forceReset) {
+        isExploring = false;
+    }
 
     if (autoBattleInterval) {
         clearInterval(autoBattleInterval);
@@ -454,7 +460,9 @@ export function handleGameOver() {
     gameState.monster = null;
 
     // 显示死亡消息
-    addLog(`<span style="color: #ef4444;">💀 你被击败了！退回到第 ${gameState.floor} 层，状态已恢复。</span>`, 'battle');
+    const lang = getCurrentLanguage();
+    const t = translations[lang];
+    addLog(`<span style="color: #ef4444;">💀 ${t.battleLogs.defeatedByMonster} ${gameState.floor}${t.battleLogs.defeatedByMonster2}</span>`, 'battle');
 
     // 自动存档
     saveGame();
@@ -590,11 +598,13 @@ export function handleBattleWin() {
     console.log('Battle win!');
     const result = winBattle();
 
-    const typeText = result.type === 'boss' ? 'BOSS' : result.type === 'elite' ? '精英怪' : '怪物';
-    let message = `🎉 击败了${typeText}，获得 <span style="color: #eab308;">${result.gold}</span> 金币！`;
+    const lang = getCurrentLanguage();
+    const t = translations[lang];
+    const typeText = t.battleLogs[`type${result.type.charAt(0).toUpperCase() + result.type.slice(1)}`] || t.battleLogs.typeMonster;
+    let message = `🎉 ${t.battleLogs.defeated}${typeText}${t.battleLogs.goldEarned} <span style="color: #eab308;">${result.gold}</span> ${t.battleLogs.goldUnit}`;
 
     if (result.droppedEquipment) {
-        message += `<br>⚔️ 获得装备: <span style="color: ${RARITY_COLORS[result.droppedEquipment.rarity]};">${result.droppedEquipment.name}</span>`;
+        message += `<br>⚔️ ${t.battleLogs.obtainedEquipment} <span style="color: ${RARITY_COLORS[result.droppedEquipment.rarity]};">${result.droppedEquipment.name}</span>`;
         if (result.improvement) {
             message += ` <span style="color: #22c55e;">(+${result.improvement}%)</span>`;
         }

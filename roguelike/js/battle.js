@@ -4,7 +4,8 @@ import { MONSTERS, ARTIFACTS } from './monsters.js';
 import { EQUIPMENT } from './equipment.js';
 import { GAME_CONFIG } from './config.js';
 import { SPELLS, getSpellsByLevel } from './spells.js';
-import { addLog } from './ui.js';
+import { addLog, updateUI } from './ui.js';
+import { getCurrentLanguage, translations } from './i18n.js';
 
 let monsterHp = 0;
 let monsterMaxHp = 0;
@@ -521,8 +522,13 @@ export function winBattle() {
     gameState.mp = gameState.maxMp;
 
     // 清理冒险日志，每下一层刷新
-    addLog(`📍 进入第 ${gameState.floor} 层`, 'floor');
-    
+    const lang = getCurrentLanguage();
+    const t = translations[lang];
+    addLog(`📍 ${t.battleLogs.enterFloor} ${gameState.floor} ${t.battleLogs.floorUnit}`, 'floor');
+
+    // 更新UI（包括楼层显示）
+    updateUI();
+
     // 自动存档
     saveGame();
 

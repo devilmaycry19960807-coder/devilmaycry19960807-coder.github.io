@@ -65,7 +65,60 @@ export const translations = {
 
         // 反馈邮箱
         feedback: "📧 意见反馈",
-        feedbackText: "如有问题或建议，欢迎反馈："
+        feedbackText: "如有问题或建议，欢迎反馈：",
+
+        // 装备部位名称
+        equipmentSlots: {
+            helmet: "头盔",
+            armor: "铠甲",
+            leftHand: "左手",
+            rightHand: "右手",
+            gloves: "护手",
+            boots: "靴子",
+            necklace: "项链",
+            ring: "戒指"
+        },
+        emptySlot: "空",
+        noArtifact: "暂无遗物（击败BOSS可获得）",
+        noSpell: "暂无法术（升级后自动学习）",
+        upgradeSpell: "升级后学习法术",
+
+        // 战斗日志翻译
+        battleLogs: {
+            encountered: "遭遇了",
+            defeated: "击败了",
+            goldEarned: "，获得",
+            goldUnit: "金币！",
+            enterFloor: "进入第",
+            floorUnit: "层",
+            defeatedByMonster: "你被击败了！退回到第",
+            defeatedByMonster2: "层，状态已恢复。",
+            obtainedEquipment: "获得装备:",
+            typeBoss: "BOSS",
+            typeElite: "精英怪",
+            typeMonster: "怪物"
+        },
+
+        rarityNames: {
+            common: "普通",
+            uncommon: "优秀",
+            rare: "稀有",
+            legendary: "传说"
+        },
+
+        // 技能名称和描述翻译
+        spellTranslations: {
+            fireball: { name: "火球术", description: "投掷火球造成伤害" },
+            ice_spike: { name: "冰刺", description: "发射冰刺穿透敌人" },
+            lightning: { name: "闪电链", description: "召唤闪电攻击敌人" },
+            heal: { name: "治疗术", description: "恢复生命值" },
+            shield: { name: "魔法护盾", description: "临时增加防御力" },
+            explosion: { name: "火焰爆裂", description: "造成大量范围伤害" },
+            meteor: { name: "陨石坠落", description: "召唤陨石毁灭敌人" },
+            divine_heal: { name: "圣光治疗", description: "大量恢复生命值" },
+            blink: { name: "闪现", description: "提高闪避率" },
+            power_up: { name: "力量增幅", description: "提高攻击力" }
+        }
     },
     en: {
         // 标题和标题栏
@@ -132,7 +185,60 @@ export const translations = {
 
         // 反馈邮箱
         feedback: "📧 Feedback",
-        feedbackText: "Questions or suggestions? Email us:"
+        feedbackText: "Questions or suggestions? Email us:",
+
+        // 装备部位名称
+        equipmentSlots: {
+            helmet: "Helmet",
+            armor: "Armor",
+            leftHand: "Left Hand",
+            rightHand: "Right Hand",
+            gloves: "Gloves",
+            boots: "Boots",
+            necklace: "Necklace",
+            ring: "Ring"
+        },
+        emptySlot: "Empty",
+        noArtifact: "No artifacts (defeat bosses to obtain)",
+        noSpell: "No spells (auto-learn on level up)",
+        upgradeSpell: "Learn spells on level up",
+
+        // Battle log translations
+        battleLogs: {
+            encountered: "Encountered",
+            defeated: "Defeated",
+            goldEarned: ", earned",
+            goldUnit: " gold!",
+            enterFloor: "Entered floor",
+            floorUnit: "",
+            defeatedByMonster: "You were defeated! Retreated to floor",
+            defeatedByMonster2: ", status restored.",
+            obtainedEquipment: "Obtained equipment:",
+            typeBoss: "BOSS",
+            typeElite: "Elite",
+            typeMonster: "Monster"
+        },
+
+        rarityNames: {
+            common: "Common",
+            uncommon: "Uncommon",
+            rare: "Rare",
+            legendary: "Legendary"
+        },
+
+        // 技能名称和描述翻译
+        spellTranslations: {
+            fireball: { name: "Fireball", description: "Throws a fireball to deal damage" },
+            ice_spike: { name: "Ice Spike", description: "Shoots ice spikes to pierce enemies" },
+            lightning: { name: "Lightning Chain", description: "Summons lightning to attack enemies" },
+            heal: { name: "Heal", description: "Restores HP" },
+            shield: { name: "Magic Shield", description: "Temporarily increases defense" },
+            explosion: { name: "Flame Explosion", description: "Deals massive AOE damage" },
+            meteor: { name: "Meteor Fall", description: "Summons meteors to destroy enemies" },
+            divine_heal: { name: "Divine Heal", description: "Greatly restores HP" },
+            blink: { name: "Blink", description: "Increases dodge rate" },
+            power_up: { name: "Power Up", description: "Increases attack power" }
+        }
     }
 };
 
@@ -166,16 +272,16 @@ export function applyTranslations() {
     // 标题
     document.querySelector('h1').textContent = t.title;
 
-    // 语言切换按钮
+    // 语言切换按钮（中文界面显示EN，英文界面显示中文）
     const langBtn = document.getElementById('langToggleBtn');
     if (langBtn) {
-        langBtn.textContent = currentLang === 'zh' ? '🌐 中文' : '🌐 EN';
+        langBtn.textContent = currentLang === 'zh' ? '🌐 EN' : '🌐 中文';
     }
 
     // 楼层信息（需要特殊处理变量）
     const floorEl = document.getElementById('floor');
     const maxFloorEl = document.getElementById('maxFloor');
-    if (floorEl && maxFloorEl) {
+    if (floorEl && maxFloorEl && t.floorInfo) {
         document.querySelector('.floor-info').textContent = t.floorInfo
             .replace('FLOOR', floorEl.textContent)
             .replace('MAXFLOOR', maxFloorEl.textContent);
@@ -186,7 +292,13 @@ export function applyTranslations() {
     if (actionPanelH2) actionPanelH2.textContent = t.actions;
 
     const autoBattleBtn = document.getElementById('autoBattleBtn');
-    if (autoBattleBtn) autoBattleBtn.textContent = t.autoBattleBtn;
+    if (autoBattleBtn) {
+        // 不要覆盖按钮的实际状态文本，只在初始化时设置
+        if (!autoBattleBtn.dataset.initialized) {
+            autoBattleBtn.textContent = t.autoBattleBtn;
+            autoBattleBtn.dataset.initialized = 'true';
+        }
+    }
 
     // 怪物区域
     const noMonsterEl = document.getElementById('noMonsterDisplay');
