@@ -37,7 +37,7 @@ export function explore() {
         return {
             success: true,
             type: 'chest',
-            message: `发现了宝箱！`,
+            message: t.explorationLogs.foundChest,
             gold: goldFound,
             noFloorIncrement: true
         };
@@ -52,7 +52,7 @@ export function explore() {
         return {
             success: true,
             type: 'fountain',
-            message: `发现了生命之泉，恢复 ${hpRestore} HP！`,
+            message: t.explorationLogs.foundFountain.replace('HP', hpRestore),
             hpRestore: hpRestore,
             noFloorIncrement: true
         };
@@ -68,7 +68,7 @@ export function explore() {
             return {
                 success: true,
                 type: 'shop',
-                message: `发现了一处安全的休息地，恢复了 ${hpRestore} HP。`,
+                message: t.explorationLogs.foundShop.replace('HP', hpRestore),
                 hpRestore: hpRestore,
                 shouldShowShop: true
             };
@@ -77,7 +77,7 @@ export function explore() {
         return {
             success: true,
             type: 'rest',
-            message: `发现了一处安全的休息地，恢复了 ${hpRestore} HP。`,
+            message: t.explorationLogs.foundRest.replace('HP', hpRestore),
             hpRestore: hpRestore
         };
     }
@@ -147,15 +147,15 @@ function showChestModal(goldFound) {
     document.getElementById('chestNormal').addEventListener('click', () => {
         updateGold(goldFound);
         saveGame();
-        addLog(`💰 获得了 ${goldFound} 金币`, 'item');
+        addLog(t.explorationLogs.goldEarned.replace('GOLD', goldFound), 'item');
         document.body.removeChild(chestModal);
 
         // 恢复自动战斗
         if (wasAuto) {
             gameState.isAutoBattle = true;
             const autoBtn = document.getElementById('autoBattleBtn');
-            if (autoBtn) autoBtn.textContent = '⏸️ 停止战斗';
-            addLog('▶️ 自动战斗继续！', 'info');
+            if (autoBtn) autoBtn.textContent = t.explorationLogs.stopBattle;
+            addLog(t.explorationLogs.autoBattleContinue, 'info');
             updateUI();
             // 从 game.js 导入的 startAutoBattleLoop，强制重置探索标志
             import('./game.js').then(m => {
@@ -165,20 +165,20 @@ function showChestModal(goldFound) {
     });
 
     document.getElementById('chestAd').addEventListener('click', () => {
-        addLog('📺 正在播放广告...', 'info');
+        addLog(t.explorationLogs.playingAd, 'info');
         setTimeout(() => {
             const finalGold = goldFound * 10;
             updateGold(finalGold);
             saveGame();
-            addLog(`💎 奖励翻倍！获得 ${finalGold} 金币！`, 'item');
+            addLog(t.explorationLogs.rewardDoubled.replace('GOLD', finalGold), 'item');
             document.body.removeChild(chestModal);
 
             // 恢复自动战斗
             if (wasAuto) {
                 gameState.isAutoBattle = true;
                 const autoBtn = document.getElementById('autoBattleBtn');
-                if (autoBtn) autoBtn.textContent = '⏸️ 停止战斗';
-                addLog('▶️ 自动战斗继续！', 'info');
+                if (autoBtn) autoBtn.textContent = t.explorationLogs.stopBattle;
+                addLog(t.explorationLogs.autoBattleContinue, 'info');
                 updateUI();
                 import('./game.js').then(m => {
                     m.startAutoBattleLoop(true);
@@ -190,13 +190,15 @@ function showChestModal(goldFound) {
 
 export function heal(times = 1) {
     const totalCost = GAME_CONFIG.HEAL_COST * times;
+    const lang = getCurrentLanguage();
+    const t = translations[lang];
 
     if (gameState.gold < totalCost) {
-        return { success: false, message: '金币不足！' };
+        return { success: false, message: t.explorationLogs.notEnoughGold };
     }
 
     if (gameState.hp >= gameState.maxHp) {
-        return { success: false, message: '血量已满！' };
+        return { success: false, message: t.explorationLogs.hpFull };
     }
 
     updateGold(-totalCost);
@@ -206,7 +208,7 @@ export function heal(times = 1) {
 
     return {
         success: true,
-        message: `花费${totalCost}金币，恢复了 ${healAmount} HP！`,
+        message: t.explorationLogs.spentGoldHeal.replace('COST', totalCost).replace('HEAL', healAmount),
         healAmount: healAmount,
         cost: totalCost
     };

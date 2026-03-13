@@ -90,17 +90,19 @@ export function handleExplore() {
 // 开始/停止自动战斗
 export function handleAutoBattle() {
     console.log('handleAutoBattle called');
+    const lang = getCurrentLanguage();
+    const t = translations[lang];
     const isAuto = toggleAutoBattle();
     console.log('Auto battle toggled to:', isAuto);
 
     const autoBtn = document.getElementById('autoBattleBtn');
     if (isAuto) {
-        addLog('▶️ 自动战斗已启动！角色将自动探索和战斗。', 'info');
-        if (autoBtn) autoBtn.textContent = '⏸️ 停止战斗';
+        addLog(t.explorationLogs.autoBattleStarted, 'info');
+        if (autoBtn) autoBtn.textContent = t.explorationLogs.stopBattle;
         startAutoBattleLoop();
     } else {
-        addLog('⏸️ 自动战斗已停止。', 'info');
-        if (autoBtn) autoBtn.textContent = '▶️ 开始自动战斗';
+        addLog(t.explorationLogs.autoBattleStopped, 'info');
+        if (autoBtn) autoBtn.textContent = t.autoBattleBtn;
         if (autoBattleInterval) {
             clearInterval(autoBattleInterval);
             autoBattleInterval = null;
@@ -840,8 +842,10 @@ function closeShopModal(shopModal, wasAutoBattle = false) {
         setTimeout(() => {
             gameState.isAutoBattle = true;
             const autoBtn = document.getElementById('autoBattleBtn');
-            if (autoBtn) autoBtn.textContent = '⏸️ 停止战斗';
-            addLog('▶️ 自动战斗继续！', 'info');
+            const lang = getCurrentLanguage();
+            const t = translations[lang];
+            if (autoBtn) autoBtn.textContent = t.explorationLogs.stopBattle;
+            addLog(t.explorationLogs.autoBattleContinue, 'info');
             startAutoBattleLoop();
         }, 500);
     }

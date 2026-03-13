@@ -281,7 +281,7 @@ export function updateButtonStates() {
     
     // 更新自动战斗按钮
     if (autoBtn) {
-        autoBtn.textContent = isAutoBattle ? '⏸️ 停止战斗' : '▶️ 开始自动战斗';
+        autoBtn.textContent = isAutoBattle ? t.explorationLogs.stopBattle : t.autoBattleBtn;
         autoBtn.className = isAutoBattle ? 'action-btn shop' : 'action-btn attack';
     }
 }

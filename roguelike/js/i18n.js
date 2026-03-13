@@ -99,6 +99,24 @@ export const translations = {
             typeMonster: "怪物"
         },
 
+        // 探索日志翻译
+        explorationLogs: {
+            foundChest: "发现了宝箱！",
+            foundFountain: "发现了生命之泉，恢复 HP HP！",
+            foundRest: "发现了一处安全的休息地，恢复了 HP HP。",
+            foundShop: "发现了一处安全的休息地，恢复了 HP HP。",
+            autoBattleContinue: "▶️ 自动战斗继续！",
+            goldEarned: "💰 获得了 GOLD 金币",
+            rewardDoubled: "💎 奖励翻倍！获得 GOLD 金币！",
+            playingAd: "📺 正在播放广告...",
+            notEnoughGold: "金币不足！",
+            hpFull: "血量已满！",
+            spentGoldHeal: "花费COST金币，恢复了 HEAL HP！",
+            stopBattle: "⏸️ 停止战斗",
+            autoBattleStarted: "▶️ 自动战斗已启动！角色将自动探索和战斗。",
+            autoBattleStopped: "⏸️ 自动战斗已停止。"
+        },
+
         rarityNames: {
             common: "普通",
             uncommon: "优秀",
@@ -217,6 +235,24 @@ export const translations = {
             typeBoss: "BOSS",
             typeElite: "Elite",
             typeMonster: "Monster"
+        },
+
+        // Exploration log translations
+        explorationLogs: {
+            foundChest: "Found a treasure chest!",
+            foundFountain: "Found a Fountain of Life, restored HP HP!",
+            foundRest: "Found a safe resting place, restored HP HP.",
+            foundShop: "Found a safe resting place, restored HP HP.",
+            autoBattleContinue: "▶️ Auto battle continues!",
+            goldEarned: "💰 Earned GOLD gold",
+            rewardDoubled: "💎 Reward doubled! Earned GOLD gold!",
+            playingAd: "📺 Playing ad...",
+            notEnoughGold: "Not enough gold!",
+            hpFull: "HP is already full!",
+            spentGoldHeal: "Spent COST gold, restored HEAL HP!",
+            stopBattle: "⏸️ Stop Battle",
+            autoBattleStarted: "▶️ Auto battle started! Character will explore and fight automatically.",
+            autoBattleStopped: "⏸️ Auto battle stopped."
         },
 
         rarityNames: {
